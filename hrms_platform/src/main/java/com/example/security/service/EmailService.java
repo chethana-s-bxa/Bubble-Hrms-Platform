@@ -336,26 +336,101 @@ public class EmailService {
                                         String username,
                                         String tempPassword) {
 
-        String subject = "Admin Account Provisioned";
+        String subject = "Admin Access Granted - Bounteous Bubble.";
 
         String textContent = """
-            Your Admin Account has been created.
+            Bubble - Bounteous
+            Your administrator access has been granted.
 
             Username: %s
             Temporary Password: %s
 
-            Please login and change your password immediately.
+            Please log in and change your password immediately.
+
+            Bubble HRMS
             """.formatted(username, tempPassword);
+
 
         String htmlContent = """
             <html>
-                <body style="font-family: Arial, sans-serif;">
-                    <h2>Admin Account Provisioned</h2>
-                    <p>Your Admin Account has been created.</p>
-                    <p><strong>Username:</strong> %s</p>
-                    <p><strong>Temporary Password:</strong> %s</p>
-                    <p>Please login and change your password immediately.</p>
-                </body>
+            <body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;">
+            
+            <table width="100%%" cellspacing="0" cellpadding="0" style="padding:30px;">
+                <tr>
+                    <td align="center">
+
+                        <table width="520" style="background:white;border-radius:10px;padding:30px;
+                               box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+
+                            <tr>
+                                <td style="text-align:center;font-size:22px;font-weight:bold;
+                                           color:#2c3e50;padding-bottom:20px;">
+                                    Bubble HRMS
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-size:18px;font-weight:bold;color:#333;">
+                                    Admin Access Granted
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding-top:15px;color:#555;font-size:14px;">
+                                    Hello,
+                                    <br><br>
+                                    Your account has been granted <b>Administrator privileges</b> in the Bubble HRMS system.
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding-top:20px;">
+                                    <table style="background:#f7f9fc;border-radius:6px;padding:15px;width:100%%;">
+                                        <tr>
+                                            <td style="font-size:14px;color:#333;">
+                                                <b>Username:</b> %s
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td style="font-size:14px;color:#333;padding-top:8px;">
+                                                <b>Temporary Password:</b> %s
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding-top:20px;color:#555;font-size:14px;">
+                                    Please log in using the credentials above and change your password immediately for security reasons.
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td align="center" style="padding-top:25px;">
+                                    <a href="http://localhost:5173/login"
+                                       style="background:#2563eb;color:white;text-decoration:none;
+                                       padding:12px 24px;border-radius:6px;font-size:14px;
+                                       font-weight:bold;display:inline-block;">
+                                       Login to HRMS
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding-top:30px;font-size:12px;color:#888;text-align:center;">
+                                    If you did not expect this email, please contact your system administrator.
+                                </td>
+                            </tr>
+
+                        </table>
+
+                    </td>
+                </tr>
+            </table>
+
+            </body>
             </html>
             """.formatted(username, tempPassword);
 

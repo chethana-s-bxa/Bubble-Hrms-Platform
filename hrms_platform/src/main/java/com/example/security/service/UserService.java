@@ -300,10 +300,9 @@ public class UserService {
     }
 
     @Transactional
-    public User provisionAdmin(AdminProvisionRequest request,
-                               String currentUsername) {
+    public void provisionAdmin(AdminProvisionRequest request, String currentUsername) {
 
-        //  Validate current user is ADMIN
+        // Validate current user is ADMIN
         User currentUser = userRepository.findByUsernameIgnoreCase(currentUsername)
                 .orElseThrow(() -> new RuntimeException("Current user not found"));
 
@@ -314,7 +313,7 @@ public class UserService {
             throw new IllegalStateException("Only ADMIN can provision another ADMIN");
         }
 
-        //  Validate employee exists
+        // Validate employee exists
         Employee employee = employeeRepository.findById(request.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
@@ -322,48 +321,19 @@ public class UserService {
             throw new IllegalStateException("Employee does not have a company email");
         }
 
-        String username = employee.getCompanyEmail();
-
-        //  Check if user already exists
-        User user = userRepository.findByUsernameIgnoreCase(username)
-                .orElse(null);
-
         Role employeeRole = roleRepository.findByName(RoleConstants.ROLE_EMPLOYEE)
                 .orElseThrow(() -> new RuntimeException("ROLE_EMPLOYEE not found"));
 
         Role adminRole = roleRepository.findByName(RoleConstants.ROLE_ADMIN)
                 .orElseThrow(() -> new RuntimeException("ROLE_ADMIN not found"));
 
-        if (user == null) {
+        // Check user by employeeId (correct approach)
+        User user = userRepository.findByEmployeeId(employee.getEmployeeId())
+                .orElse(null);
 
-            // Generate temporary password
-            String tempPassword = passwordGenerator.generateTempPassword();
+        // Case 1: User already exists
+        if (user != null) {
 
-            Set<Role> roles = new HashSet<>();
-            roles.add(employeeRole);
-            roles.add(adminRole);
-
-            user = User.builder()
-                    .username(username)
-                    .password(passwordEncoder.encode(tempPassword))
-                    .employeeId(employee.getEmployeeId())
-                    .enabled(true)
-                    .roles(roles)
-                    .mustChangePassword(true)
-                    .build();
-
-            user = userRepository.save(user);
-
-            //  Send credentials via email
-            emailService.sendAdminProvisionEmail(
-                    username,
-                    username,
-                    tempPassword
-            );
-
-        } else {
-
-            //  If user exists → just assign admin role
             boolean alreadyAdmin = user.getRoles().stream()
                     .anyMatch(role -> RoleConstants.ROLE_ADMIN.equals(role.getName()));
 
@@ -372,17 +342,42 @@ public class UserService {
             }
 
             user.getRoles().add(adminRole);
-            user.setMustChangePassword(true);
+
             userRepository.save(user);
 
             emailService.sendAdminProvisionEmail(
-                    username,
-                    username,
-                    "Your role has been upgraded to ADMIN. Please login."
+                    employee.getCompanyEmail(),
+                    employee.getCompanyEmail(),
+                    passwordGenerator.generateTempPassword()
             );
+
+            return;
         }
 
-        return user;
+        // Case 2: User does not exist → create login
+        String tempPassword = passwordGenerator.generateTempPassword();
+
+        Set<Role> roles = new HashSet<>();
+        roles.add(employeeRole);
+        roles.add(adminRole);
+
+        user = User.builder()
+                .username(employee.getCompanyEmail())
+                .password(passwordEncoder.encode(tempPassword))
+                .employeeId(employee.getEmployeeId())
+                .enabled(true)
+                .roles(roles)
+                .mustChangePassword(true)
+                .build();
+
+        user = userRepository.save(user);
+
+        emailService.sendAdminProvisionEmail(
+                employee.getCompanyEmail(),
+                employee.getCompanyEmail(),
+                tempPassword
+        );
+
     }
 }
 

@@ -34,6 +34,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
        """)
     long countActiveUsersByRole(String roleName);
 
+    Optional<User> findByEmployeeId(Long employeeId);
+
+    @Query("""
+       select count(u)
+       from User u
+       join u.roles r
+       where r.name = 'ROLE_ADMIN'
+       """)
+    long countAdmins();
+
 }
 
 

@@ -19,6 +19,7 @@ public class EmployeeSearchController {
 
     private final EmployeeService employeeService;
 
+//    Search is active for all
     @PreAuthorize("hasAnyRole('HR_MANAGER','HR','HR_OPERATIONS','HR_BP','HR_PAYROLL','TALENT_ACQUISITION','ADMIN','EMPLOYEE')")
     @PostMapping("/search")
     public ResponseEntity<List<EmployeeSearchDTO>> searchEmployees(

@@ -70,5 +70,10 @@ public class User {
     public boolean isMustChangePassword() {
         return Boolean.TRUE.equals(mustChangePassword);
     }
+
+    public boolean hasRole(String roleName) {
+        return roles.stream()
+                .anyMatch(role -> role.getName().equals(roleName));
+    }
 }
 

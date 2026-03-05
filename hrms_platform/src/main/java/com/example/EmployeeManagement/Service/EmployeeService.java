@@ -375,6 +375,7 @@ public class EmployeeService {
         return deptA.trim().equalsIgnoreCase(deptB.trim());
     }
 
+//    Employee Search based on name, department, id, location, band
     public List<EmployeeSearchDTO> searchEmployees(EmployeeSearchRequestDTO request) {
 
 

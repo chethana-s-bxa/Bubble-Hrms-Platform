@@ -1,6 +1,7 @@
 package com.example.security.service;
 
 import com.example.security.constants.RoleConstants;
+import com.example.security.dto.AdminProvisionRequest;
 import com.example.security.dto.ChangePasswordRequest;
 import com.example.security.dto.RegisterRequest;
 import com.example.security.dto.ResetPasswordRequest;
@@ -10,6 +11,7 @@ import com.example.EmployeeManagement.Model.Employee;
 import com.example.EmployeeManagement.Repository.EmployeeRepository;
 import com.example.security.repository.RoleRepository;
 import com.example.security.repository.UserRepository;
+import com.example.security.util.PasswordGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final EmployeeRepository employeeRepository;
+    private final PasswordGenerator passwordGenerator;
     private final com.example.security.util.SecurityUtil securityUtil;
     @org.springframework.beans.factory.annotation.Value("${app.frontend.base-url:}")
     private String frontendBaseUrl;
@@ -130,8 +133,18 @@ public class UserService {
 
     @Transactional
     public void deleteByEmployeeId(Long employeeId) {
-        userRepository.deleteByEmployeeId(employeeId);
+
+        User user = userRepository.findAll().stream()
+                .filter(u -> employeeId.equals(u.getEmployeeId()))
+                .findFirst()
+                .orElse(null);
+
+        if (user != null) {
+            validateLastAdminProtection(user);
+            userRepository.delete(user);
+        }
     }
+
 
     @Transactional
     public User save(User user) {
@@ -265,5 +278,111 @@ public class UserService {
         return trimmed.substring(0, 1).toUpperCase() + trimmed.substring(1).toLowerCase();
     }
 
+    private void validateLastAdminProtection(User user) {
+
+        if (user == null || user.getRoles() == null) {
+            return;
+        }
+
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> RoleConstants.ROLE_ADMIN.equals(role.getName()));
+
+        if (!isAdmin) {
+            return;
+        }
+
+        long activeAdminCount =
+                userRepository.countActiveUsersByRole(RoleConstants.ROLE_ADMIN);
+
+        if (activeAdminCount <= 1 && user.isEnabled()) {
+            throw new IllegalStateException("Cannot modify the last active admin");
+        }
+    }
+
+    @Transactional
+    public User provisionAdmin(AdminProvisionRequest request,
+                               String currentUsername) {
+
+        //  Validate current user is ADMIN
+        User currentUser = userRepository.findByUsernameIgnoreCase(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+
+        boolean isAdmin = currentUser.getRoles().stream()
+                .anyMatch(role -> RoleConstants.ROLE_ADMIN.equals(role.getName()));
+
+        if (!isAdmin) {
+            throw new IllegalStateException("Only ADMIN can provision another ADMIN");
+        }
+
+        //  Validate employee exists
+        Employee employee = employeeRepository.findById(request.getEmployeeId())
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        if (employee.getCompanyEmail() == null || employee.getCompanyEmail().isBlank()) {
+            throw new IllegalStateException("Employee does not have a company email");
+        }
+
+        String username = employee.getCompanyEmail();
+
+        //  Check if user already exists
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .orElse(null);
+
+        Role employeeRole = roleRepository.findByName(RoleConstants.ROLE_EMPLOYEE)
+                .orElseThrow(() -> new RuntimeException("ROLE_EMPLOYEE not found"));
+
+        Role adminRole = roleRepository.findByName(RoleConstants.ROLE_ADMIN)
+                .orElseThrow(() -> new RuntimeException("ROLE_ADMIN not found"));
+
+        if (user == null) {
+
+            // Generate temporary password
+            String tempPassword = passwordGenerator.generateTempPassword();
+
+            Set<Role> roles = new HashSet<>();
+            roles.add(employeeRole);
+            roles.add(adminRole);
+
+            user = User.builder()
+                    .username(username)
+                    .password(passwordEncoder.encode(tempPassword))
+                    .employeeId(employee.getEmployeeId())
+                    .enabled(true)
+                    .roles(roles)
+                    .mustChangePassword(true)
+                    .build();
+
+            user = userRepository.save(user);
+
+            //  Send credentials via email
+            emailService.sendAdminProvisionEmail(
+                    username,
+                    username,
+                    tempPassword
+            );
+
+        } else {
+
+            //  If user exists → just assign admin role
+            boolean alreadyAdmin = user.getRoles().stream()
+                    .anyMatch(role -> RoleConstants.ROLE_ADMIN.equals(role.getName()));
+
+            if (alreadyAdmin) {
+                throw new IllegalStateException("User is already an admin");
+            }
+
+            user.getRoles().add(adminRole);
+            user.setMustChangePassword(true);
+            userRepository.save(user);
+
+            emailService.sendAdminProvisionEmail(
+                    username,
+                    username,
+                    "Your role has been upgraded to ADMIN. Please login."
+            );
+        }
+
+        return user;
+    }
 }
 

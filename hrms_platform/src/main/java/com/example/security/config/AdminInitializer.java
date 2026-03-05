@@ -1,5 +1,6 @@
 package com.example.security.config;
 
+import com.example.security.constants.RoleConstants;
 import com.example.security.model.Role;
 import com.example.security.model.User;
 import com.example.security.repository.RoleRepository;
@@ -23,11 +24,17 @@ public class AdminInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        if (userRepository.findByUsername("admin@bounteous.com").isPresent()) {
+//        if (userRepository.findByUsername("admin@bounteous.com").isPresent()) {
+//            return;
+//        }
+
+        long adminCount = userRepository.countActiveUsersByRole(RoleConstants.ROLE_ADMIN);
+
+        if (adminCount > 0) {
             return;
         }
 
-        Role employeeRole = roleRepository.findByName("ROLE_EMPLOYEE")
+        Role employeeRole = roleRepository.findByName(RoleConstants.ROLE_EMPLOYEE)
                 .orElseThrow(() ->
                         new RuntimeException("ROLE_EMPLOYEE not found in DB"));
 

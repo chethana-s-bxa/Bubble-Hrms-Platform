@@ -331,6 +331,36 @@ public class EmailService {
                 </html>
                 """.formatted(brandColor, brandColor, companyEmail, tempPassword, loginUrl, hrContactEmail, hrContactPhone);
     }
+
+    public void sendAdminProvisionEmail(String toEmail,
+                                        String username,
+                                        String tempPassword) {
+
+        String subject = "Admin Account Provisioned";
+
+        String textContent = """
+            Your Admin Account has been created.
+
+            Username: %s
+            Temporary Password: %s
+
+            Please login and change your password immediately.
+            """.formatted(username, tempPassword);
+
+        String htmlContent = """
+            <html>
+                <body style="font-family: Arial, sans-serif;">
+                    <h2>Admin Account Provisioned</h2>
+                    <p>Your Admin Account has been created.</p>
+                    <p><strong>Username:</strong> %s</p>
+                    <p><strong>Temporary Password:</strong> %s</p>
+                    <p>Please login and change your password immediately.</p>
+                </body>
+            </html>
+            """.formatted(username, tempPassword);
+
+        sendHtmlEmail(toEmail, subject, textContent, htmlContent);
+    }
 }
 
 

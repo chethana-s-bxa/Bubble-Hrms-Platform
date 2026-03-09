@@ -1,7 +1,6 @@
 package com.example.hrms_platform_document.service.storage;
 
 import com.example.hrms_platform_document.exception.StorageOperationException;
-import com.example.hrms_platform_document.service.storage.StorageService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -110,6 +109,7 @@ public class S3StorageService implements StorageService {
      * Generate secure presigned URL for download
      */
     @Override
+    @org.springframework.cache.annotation.Cacheable(cacheNames = "presignedUrlByKey", key = "#key")
     public String generatePresignedUrl(String key) {
         try {
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()

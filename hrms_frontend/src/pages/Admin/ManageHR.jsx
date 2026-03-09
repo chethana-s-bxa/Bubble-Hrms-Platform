@@ -112,9 +112,14 @@ const ManageHR = () => {
             <h2 className="fw-bold mb-1">Manage HR Accounts</h2>
             <p className="text-muted mb-0">View and manage HR users</p>
           </div>
-          <button className="btn btn-primary d-flex align-items-center gap-2" onClick={() => navigate('/admin/create-hr')}>
-            <FaPlus size={14} /> Create HR
-          </button>
+          <div className="d-flex gap-2">
+            <button className="btn btn-danger d-flex align-items-center gap-2" onClick={() => navigate('/admin/create-admin')}>
+              <FaPlus size={14} /> Create Admin
+            </button>
+            <button className="btn btn-primary d-flex align-items-center gap-2" onClick={() => navigate('/admin/create-hr')}>
+              <FaPlus size={14} /> Create HR
+            </button>
+          </div>
         </div>
 
         <div className="card border-0 shadow-sm">

@@ -4,12 +4,26 @@ import Layout from '../../components/Layout/Layout';
 import axiosInstance from '../../utils/axiosConfig';
 import { API_ENDPOINTS } from '../../config/api';
 import { useToast } from '../../context/ToastContext';
-import { FaEnvelope, FaLock, FaSave, FaTimes } from 'react-icons/fa';
+import {
+  FaUser,
+  FaEnvelope,
+  FaBuilding,
+  FaPhone,
+  FaSave,
+  FaTimes,
+  FaIdCard,
+  FaBriefcase,
+  FaMoneyBillWave,
+  FaCalendarAlt,
+  FaChevronDown,
+  FaChevronUp
+} from 'react-icons/fa';
 
 const CreateHR = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     role: '',
@@ -54,10 +68,8 @@ const CreateHR = () => {
   
     if (!formData.phone) newErrors.phone = 'Phone required';
   
-    // ⭐ IMPORTANT
     setErrors(newErrors);
   
-    // ⭐ return validation result
     return Object.keys(newErrors).length === 0;
   };
   
@@ -91,209 +103,311 @@ const CreateHR = () => {
   };
   return (
     <Layout>
-      <div className="container-fluid">
+      <div className="container-fluid page-gradient">
         <div className="mb-4">
-          <h2 className="fw-bold">Create HR</h2>
-          <p className="text-muted mb-0">Add a new HR employee</p>
+          <h2 className="fw-bold mb-2">
+            <FaUser className="me-3 text-primary" />
+            Create HR Personnel
+          </h2>
+          <p className="text-muted mb-0">
+            Add a new HR team member with appropriate role and permissions.
+          </p>
         </div>
-  
+
         <div className="row justify-content-center">
-          <div className="col-lg-8">
+          <div className="col-lg-10">
             <div className="card border-0 shadow-sm">
               <div className="card-body p-4">
                 <form onSubmit={handleSubmit}>
-                  <div className="row g-3">
-  
-                    {/* FIRST NAME */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">
-                        First Name <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                      />
-                      {errors.firstName && <div className="invalid-feedback d-block">{errors.firstName}</div>}
+                  {/* Basic Information Section */}
+                  <div className="mb-4">
+                    <div className="d-flex align-items-center mb-3">
+                      <FaIdCard className="text-primary me-2" />
+                      <h5 className="mb-0 fw-semibold">Basic Information</h5>
                     </div>
-  
-                    {/* LAST NAME */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">
-                        Last Name <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        className={`form-control ${errors.lastName ? 'is-invalid' : ''}`}
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                      />
-                      {errors.lastName && <div className="invalid-feedback d-block">{errors.lastName}</div>}
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          First Name <span className="text-danger">*</span>
+                        </label>
+                        <div className="input-group">
+                          <span className="input-group-text bg-light">
+                            <FaUser size={14} className="text-muted" />
+                          </span>
+                          <input
+                            type="text"
+                            className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleChange}
+                            placeholder="Enter first name"
+                          />
+                        </div>
+                        {errors.firstName && <div className="invalid-feedback d-block">{errors.firstName}</div>}
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          Last Name <span className="text-danger">*</span>
+                        </label>
+                        <div className="input-group">
+                          <span className="input-group-text bg-light">
+                            <FaUser size={14} className="text-muted" />
+                          </span>
+                          <input
+                            type="text"
+                            className={`form-control ${errors.lastName ? 'is-invalid' : ''}`}
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                            placeholder="Enter last name"
+                          />
+                        </div>
+                        {errors.lastName && <div className="invalid-feedback d-block">{errors.lastName}</div>}
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          Personal Email <span className="text-danger">*</span>
+                        </label>
+                        <div className="input-group">
+                          <span className="input-group-text bg-light">
+                            <FaEnvelope size={14} className="text-muted" />
+                          </span>
+                          <input
+                            type="email"
+                            className={`form-control ${errors.personalEmail ? 'is-invalid' : ''}`}
+                            name="personalEmail"
+                            value={formData.personalEmail}
+                            onChange={handleChange}
+                            placeholder="hr@company.com"
+                          />
+                        </div>
+                        {errors.personalEmail && <div className="invalid-feedback d-block">{errors.personalEmail}</div>}
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          Phone Number <span className="text-danger">*</span>
+                        </label>
+                        <div className="input-group">
+                          <span className="input-group-text bg-light">
+                            <FaPhone size={14} className="text-muted" />
+                          </span>
+                          <input
+                            type="tel"
+                            className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            placeholder="+91 9876543210"
+                          />
+                        </div>
+                        {errors.phone && <div className="invalid-feedback d-block">{errors.phone}</div>}
+                      </div>
                     </div>
-  
-                    {/* PERSONAL EMAIL */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">
-                        Personal Email <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        className={`form-control ${errors.personalEmail ? 'is-invalid' : ''}`}
-                        name="personalEmail"
-                        value={formData.personalEmail}
-                        onChange={handleChange}
-                      />
-                      {errors.personalEmail && <div className="invalid-feedback d-block">{errors.personalEmail}</div>}
+                  </div>
+
+                  {/* Professional Information Section */}
+                  <div className="mb-4">
+                    <div className="d-flex align-items-center mb-3">
+                      <FaBriefcase className="text-primary me-2" />
+                      <h5 className="mb-0 fw-semibold">Professional Information</h5>
                     </div>
-  
-                    {/* PHONE */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">
-                        Phone <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                      />
-                      {errors.phone && <div className="invalid-feedback d-block">{errors.phone}</div>}
-                    </div>
-  
-                    {/* DEPARTMENT */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">
-                        Department <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        className={`form-control ${errors.department ? 'is-invalid' : ''}`}
-                        name="department"
-                        value={formData.department}
-                        onChange={handleChange}
-                      />
-                      {errors.department && <div className="invalid-feedback d-block">{errors.department}</div>}
-                    </div>
-  
-                    {/* DESIGNATION */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">
-                        Designation <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        className={`form-control ${errors.designation ? 'is-invalid' : ''}`}
-                        name="designation"
-                        value={formData.designation}
-                        onChange={handleChange}
-                      />
-                      {errors.designation && <div className="invalid-feedback d-block">{errors.designation}</div>}
-                    </div>
-  
-                    {/* ROLE */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">Role</label>
-                      <select
-                        className="form-select"
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
-                      >
-                        <option value="ROLE_HR_OPERATIONS">HR Operations</option>
-                        <option value="ROLE_HR_PAYROLL">HR Payroll</option>
-                        <option value="ROLE_HR_BP">HR Business Partner</option>
-                        <option value="ROLE_TALENT_ACQUISITION">Talent Acquisition</option>
-                        <option value="ROLE_HR_MANAGER">HR Manager</option>
-                      </select>
-                    </div>
-  
-                    {/* BAND */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">Current Band</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="currentBand"
-                        value={formData.currentBand}
-                        onChange={handleChange}
-                      />
-                    </div>
-  
-                    {/* EXPERIENCE */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">Experience (Years)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        className={`form-control ${errors.currentExperience ? 'is-invalid' : ''}`}
-                        name="currentExperience"
-                        value={formData.currentExperience}
-                        onChange={handleChange}
-                      />
-                      {errors.currentExperience && (
-                        <div className="invalid-feedback d-block">{errors.currentExperience}</div>
-                      )}
-                    </div>
-  
-                    {/* SALARY */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">
-                        Salary (CTC) <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        className={`form-control ${errors.salary ? 'is-invalid' : ''}`}
-                        name="salary"
-                        value={formData.salary}
-                        onChange={handleChange}
-                      />
-                      {errors.salary && <div className="invalid-feedback d-block">{errors.salary}</div>}
-                    </div>
-  
-                    {/* DOJ */}
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold">Date of Joining</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        name="dateOfJoining"
-                        value={formData.dateOfJoining}
-                        onChange={handleChange}
-                      />
-                    </div>
-  
-                    {/* BUTTONS */}
-                    <div className="col-12 mt-4 d-flex gap-3">
-                      <button
-                        type="submit"
-                        className="btn btn-primary d-flex align-items-center gap-2"
-                        disabled={loading}
-                      >
-                        {loading ? (
-                          <>
-                            <span className="spinner-border spinner-border-sm" />
-                            Creating...
-                          </>
-                        ) : (
-                          <>
-                            <FaSave /> Create HR
-                          </>
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          Department <span className="text-danger">*</span>
+                        </label>
+                        <div className="input-group">
+                          <span className="input-group-text bg-light">
+                            <FaBuilding size={14} className="text-muted" />
+                          </span>
+                          <input
+                            type="text"
+                            className={`form-control ${errors.department ? 'is-invalid' : ''}`}
+                            name="department"
+                            value={formData.department}
+                            onChange={handleChange}
+                            placeholder="e.g., Human Resources, Talent Acquisition"
+                          />
+                        </div>
+                        {errors.department && <div className="invalid-feedback d-block">{errors.department}</div>}
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          Designation <span className="text-danger">*</span>
+                        </label>
+                        <div className="input-group">
+                          <span className="input-group-text bg-light">
+                            <FaBriefcase size={14} className="text-muted" />
+                          </span>
+                          <input
+                            type="text"
+                            className={`form-control ${errors.designation ? 'is-invalid' : ''}`}
+                            name="designation"
+                            value={formData.designation}
+                            onChange={handleChange}
+                            placeholder="e.g., HR Manager, Talent Acquisition Specialist"
+                          />
+                        </div>
+                        {errors.designation && <div className="invalid-feedback d-block">{errors.designation}</div>}
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          HR Role <span className="text-danger">*</span>
+                        </label>
+                        <select
+                          className="form-select"
+                          name="role"
+                          value={formData.role}
+                          onChange={handleChange}
+                        >
+                          <option value="">Select HR Role</option>
+                          <option value="ROLE_HR_OPERATIONS">HR Operations</option>
+                          <option value="ROLE_HR_PAYROLL">HR Payroll</option>
+                          <option value="ROLE_HR_BP">HR Business Partner</option>
+                          <option value="ROLE_TALENT_ACQUISITION">Talent Acquisition</option>
+                          <option value="ROLE_HR_MANAGER">HR Manager</option>
+                        </select>
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          Experience (Years)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          className={`form-control ${errors.currentExperience ? 'is-invalid' : ''}`}
+                          name="currentExperience"
+                          value={formData.currentExperience}
+                          onChange={handleChange}
+                          placeholder="0.0 - 50.0"
+                          min="0"
+                          max="50"
+                        />
+                        {errors.currentExperience && (
+                          <div className="invalid-feedback d-block">{errors.currentExperience}</div>
                         )}
-                      </button>
-  
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={() => navigate('/admin/dashboard')}
-                      >
-                        <FaTimes className="me-2" /> Cancel
-                      </button>
+                      </div>
                     </div>
-  
+                  </div>
+
+                  {/* Advanced Options Toggle */}
+                  <div className="mb-4">
+                    <button
+                      type="button"
+                      className="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
+                      onClick={() => setShowAdvanced(!showAdvanced)}
+                    >
+                      {showAdvanced ? <FaChevronUp /> : <FaChevronDown />}
+                      {showAdvanced ? "Hide" : "Show"} Additional Details
+                    </button>
+                  </div>
+
+                  {/* Advanced Information Section */}
+                  {showAdvanced && (
+                    <div className="mb-4">
+                      <div className="d-flex align-items-center mb-3">
+                        <FaCalendarAlt className="text-primary me-2" />
+                        <h5 className="mb-0 fw-semibold">Additional Details</h5>
+                      </div>
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <label className="form-label fw-semibold">Current Band</label>
+                          <select
+                            className="form-select"
+                            name="currentBand"
+                            value={formData.currentBand}
+                            onChange={handleChange}
+                          >
+                            <option value="">Select Band</option>
+                            <option value="L1">L1 - Entry Level</option>
+                            <option value="L2">L2 - Junior</option>
+                            <option value="L3">L3 - Mid Level</option>
+                            <option value="L4">L4 - Senior</option>
+                            <option value="L5">L5 - Lead</option>
+                            <option value="L6">L6 - Principal</option>
+                            <option value="L7">L7 - Architect</option>
+                          </select>
+                        </div>
+
+                        <div className="col-md-6">
+                          <label className="form-label fw-semibold">Date of Joining</label>
+                          <div className="input-group">
+                            <span className="input-group-text bg-light">
+                              <FaCalendarAlt size={14} className="text-muted" />
+                            </span>
+                            <input
+                              type="date"
+                              className="form-control"
+                              name="dateOfJoining"
+                              value={formData.dateOfJoining}
+                              onChange={handleChange}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Compensation Section */}
+                  <div className="mb-4">
+                    <div className="d-flex align-items-center mb-3">
+                      <FaMoneyBillWave className="text-primary me-2" />
+                      <h5 className="mb-0 fw-semibold">Compensation</h5>
+                    </div>
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          Salary (CTC) <span className="text-danger">*</span>
+                        </label>
+                        <div className="input-group">
+                          <span className="input-group-text bg-light">₹</span>
+                          <input
+                            type="number"
+                            className={`form-control ${errors.salary ? 'is-invalid' : ''}`}
+                            name="salary"
+                            value={formData.salary}
+                            onChange={handleChange}
+                            placeholder="50000 (min: 10,000)"
+                            min="10000"
+                            step="0.01"
+                          />
+                        </div>
+                        {errors.salary && <div className="invalid-feedback d-block">{errors.salary}</div>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="d-flex gap-3 justify-content-end pt-3 border-top">
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary d-flex align-items-center gap-2"
+                      onClick={() => navigate('/admin/dashboard')}
+                    >
+                      <FaTimes /> Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary d-flex align-items-center gap-2"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm" />
+                          Creating HR...
+                        </>
+                      ) : (
+                        <>
+                          <FaSave /> Create HR Personnel
+                        </>
+                      )}
+                    </button>
                   </div>
                 </form>
               </div>

@@ -44,6 +44,14 @@ public class AdminHrController {
         return ResponseEntity.ok(adminHrService.createHr(request));
     }
 
+    @PostMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<EmployeeCreateResponse> createAdmin(
+            @Valid @RequestBody CreateHrRequestDTO request) {
+
+        return ResponseEntity.ok(adminHrService.createAdmin(request));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<HrListResponse> getById(@PathVariable Long id) {

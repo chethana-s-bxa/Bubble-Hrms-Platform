@@ -270,6 +270,14 @@ export const AppStateProvider = ({ children }) => {
     }
   }, [accountInfo.employeeId, refreshProfileData]);
 
+  const decreasePendingCount = useCallback((type) => {
+    if (type === 'DOCUMENTS') {
+      setPendingDocumentsCount((prev) => Math.max(0, prev - 1));
+    } else if (type === 'LEAVES') {
+      setPendingLeavesCount((prev) => Math.max(0, prev - 1));
+    }
+  }, []);
+
   useEffect(() => {
     refreshNotifications();
     if (notificationsBlocked || !settings.notificationsEnabled) return undefined;
@@ -312,6 +320,7 @@ export const AppStateProvider = ({ children }) => {
       pendingLeavesCount,
       pendingCountsLoading,
       refreshPendingCounts,
+      decreasePendingCount,
       settings,
       updateSettings,
       employees,

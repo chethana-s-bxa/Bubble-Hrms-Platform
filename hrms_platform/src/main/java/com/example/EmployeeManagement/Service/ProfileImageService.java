@@ -5,10 +5,10 @@ import com.example.EmployeeManagement.Model.Employee;
 import com.example.EmployeeManagement.Repository.EmployeeRepository;
 import com.example.hrms_platform_document.service.storage.StorageService;
 import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Optional;
 
 @Service
 public class ProfileImageService {
@@ -23,6 +23,7 @@ public class ProfileImageService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "profileImageUrlByEmployeeId", key = "#employeeId")
     public void uploadProfileImage(Long employeeId, MultipartFile file) {
 
         Employee employee = employeeRepository.findById(employeeId)
@@ -66,6 +67,7 @@ public class ProfileImageService {
         employeeRepository.save(employee);
     }
 
+    @Cacheable(cacheNames = "profileImageUrlByEmployeeId", key = "#employeeId")
     public String getProfileImageUrl(Long employeeId) {
 
         Employee employee = employeeRepository.findById(employeeId)
@@ -75,12 +77,19 @@ public class ProfileImageService {
             return null;
         }
 
-        return storageService.generatePresignedUrl(
-                employee.getProfileImageKey()
-        );
+        try {
+            return storageService.generatePresignedUrl(
+                    employee.getProfileImageKey()
+            );
+        } catch (Exception e) {
+            // Log the error and return null to avoid 500 errors
+            System.err.println("Failed to generate profile image URL for employee " + employeeId + ": " + e.getMessage());
+            return null;
+        }
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "profileImageUrlByEmployeeId", key = "#employeeId")
     public void deleteProfileImage(Long employeeId) {
 
         Employee employee = employeeRepository.findById(employeeId)

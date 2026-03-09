@@ -48,6 +48,8 @@ useEffect(() => {
     pendingDocumentsCount,
     pendingLeavesCount,
     profile,
+    refreshPendingCounts,
+    decreasePendingCount,
   } = useAppState();
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef(null);
@@ -83,6 +85,13 @@ useEffect(() => {
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showNotifications, showProfileMenu, showSearchResults]);
+
+  // Refresh pending counts when notification panel is opened
+  useEffect(() => {
+    if (showNotifications && (role === 'ADMIN' || role === 'HR')) {
+      refreshPendingCounts();
+    }
+  }, [showNotifications, role, refreshPendingCounts]);
  
   useEffect(() => {
     if (!canSearchEmployees) {
@@ -105,41 +114,56 @@ useEffect(() => {
       setSearchError('');
       try {
         const payload = {};
-        const searchUrl =
-  role === "EMPLOYEE"
-    ? `${API_AUTH_BASE_URL}/api/employees/search`
-    : API_ENDPOINTS.HR.SEARCH_EMPLOYEES;
+        
+        // Determine the appropriate search endpoint based on role
+        let searchUrl;
+        if (role === "ADMIN") {
+          // Admin can search employees using the same HR endpoint
+          searchUrl = API_ENDPOINTS.HR.SEARCH_EMPLOYEES;
+        } else if (role === "HR") {
+          // HR uses their dedicated search endpoint
+          searchUrl = API_ENDPOINTS.HR.SEARCH_EMPLOYEES;
+        } else if (role === "EMPLOYEE") {
+          // Employee searches using employee-specific endpoint
+          searchUrl = `${API_AUTH_BASE_URL}/api/employees/search`;
+        } else {
+          setSearchError('Search not available for your role');
+          setShowSearchResults(true);
+          setSearchLoading(false);
+          return;
+        }
 
-if (/^\d+$/.test(term)) {
-  // if number → search by employeeId
-  payload.employeeId = Number(term);
-} else {
-  // text → search all fields (backend OR logic)
-  payload.name = term;
-  payload.department = term;
-  payload.designation = term;
-  payload.companyBaseLocation = term;
-  payload.band = term;
-}
+        // Build search payload
+        if (/^\d+$/.test(term)) {
+          // if number → search by employeeId
+          payload.employeeId = Number(term);
+        } else {
+          // text → search all fields (backend OR logic)
+          payload.name = term;
+          payload.department = term;
+          payload.designation = term;
+          payload.companyBaseLocation = term;
+          payload.band = term;
+        }
 
-const response = await axiosInstance.post(
-  searchUrl,
-  payload
-);
+        const response = await axiosInstance.post(
+          searchUrl,
+          payload
+        );
 
-const data = response.data;
+        const data = response.data;
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.data)
+          ? data.data
+          : [];
 
-const list = Array.isArray(data)
-  ? data
-  : Array.isArray(data?.data)
-  ? data.data
-  : [];
-
-setSearchResults(list);
+        setSearchResults(list);
         setShowSearchResults(true);
       } catch (error) {
         setSearchResults([]);
-        setSearchError(error.response?.data?.message || 'Search failed');
+        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Search failed';
+        setSearchError(errorMsg);
         console.log("Search error:", error.response?.status, error.response?.data);
         setShowSearchResults(true);
       } finally {
@@ -159,6 +183,16 @@ setSearchResults(list);
  
   return (
     <header className="header-bar">
+      <style>
+        {`
+          .notification-item.read {
+            opacity: 0.6;
+          }
+          .notification-item.read .fw-semibold {
+            font-weight: normal !important;
+          }
+        `}
+      </style>
       <div className="container-fluid py-2">
         <div className="row align-items-center g-2">
           <div className="col-12 col-lg-6">
@@ -287,11 +321,46 @@ setSearchResults(list);
                           <div className="text-muted px-3 py-3">No notifications yet.</div>
                         ) : (
                           notifications.map((note, index) => (
-                            <div key={note.id || `${note.type}-${index}`} className="notification-item">
-                              <div className="fw-semibold">{note.title || 'Update'}</div>
-                              <div className="small text-muted">{note.message}</div>
-                              {note.createdAt && (
-                                <div className="small text-muted">{formatTimestamp(note.createdAt)}</div>
+                            <div key={note.id || `${note.type}-${index}`} className={`notification-item d-flex justify-content-between align-items-start ${note.read ? 'read' : ''}`}>
+                              <div className="flex-grow-1">
+                                <div className="fw-semibold">{note.title || 'Update'}</div>
+                                <div className="small text-muted">{note.message}</div>
+                                {note.createdAt && (
+                                  <div className="small text-muted">{formatTimestamp(note.createdAt)}</div>
+                                )}
+                              </div>
+                              {note.id && !note.read && (
+                                <button
+                                  type="button"
+                                  className="btn btn-link btn-sm ms-2 text-decoration-none text-nowrap"
+                                  title="Mark as read"
+                                  onClick={async () => {
+                                    try {
+                                      await axiosInstance.put(`${API_ENDPOINTS.NOTIFICATIONS}/${note.id}/read`);
+                                      refreshNotifications();
+                                    } catch (error) {
+                                      console.error('Failed to mark as read:', error);
+                                    }
+                                  }}
+                                >
+                                  ✓
+                                </button>
+                              )}
+                              {(note.type === 'PENDING_DOCUMENTS' || note.type === 'PENDING_LEAVES') && (
+                                <button
+                                  type="button"
+                                  className="btn btn-link btn-sm ms-2 text-decoration-none text-nowrap"
+                                  title="Mark as seen"
+                                  onClick={() => {
+                                    if (note.type === 'PENDING_DOCUMENTS') {
+                                      decreasePendingCount('DOCUMENTS');
+                                    } else if (note.type === 'PENDING_LEAVES') {
+                                      decreasePendingCount('LEAVES');
+                                    }
+                                  }}
+                                >
+                                  ✓
+                                </button>
                               )}
                             </div>
                           ))

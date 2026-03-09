@@ -22,7 +22,10 @@ public class AuditLog {
 //    private Long recordId;
     private String fieldName;
 
+    @Column(columnDefinition = "text")
     private String oldValue;
+
+    @Column(columnDefinition = "text")
     private String newValue;
 
     private String actionType;        // INSERT, UPDATE, DELETE

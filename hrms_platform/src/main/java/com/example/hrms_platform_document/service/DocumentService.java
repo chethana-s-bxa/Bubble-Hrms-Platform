@@ -15,6 +15,7 @@ import com.example.security.util.SecurityUtil;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -204,6 +205,7 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "documents", key = "#documentId")
     public Document getDocumentById(Long documentId) {
         return documentRepository.findById(documentId)
                 .orElseThrow(() -> new DocumentNotFoundException(documentId));

@@ -6,6 +6,7 @@ import com.example.EmployeeManagement.DTO.EmployeeSearchRequestDTO;
 import com.example.EmployeeManagement.Service.EmployeeService;
 import com.example.EmployeeManagement.Model.Employee;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -31,6 +32,18 @@ public class EmployeeController {
         List<EmployeeDTO> employees = employeeService.getAllEmployee();
         return ResponseEntity.ok(employees);
     }
+
+//    @PreAuthorize("hasAnyRole('HR_MANAGER','HR','HR_OPERATIONS','HR_BP','HR_PAYROLL','TALENT_ACQUISITION','ADMIN')")
+//    @GetMapping("/employees")
+//    public Page<EmployeeDTO> getEmployees(
+//
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size,
+//            @RequestParam(defaultValue = "firstName") String sortBy
+//    ) {
+//
+//        return employeeService.getEmployees(page, size, sortBy);
+//    }
 
     // GET /api/v1/hrms/employees/{id}
     @PreAuthorize("hasAnyRole('HR_MANAGER','HR','HR_OPERATIONS','HR_BP','HR_PAYROLL','TALENT_ACQUISITION','ADMIN')")

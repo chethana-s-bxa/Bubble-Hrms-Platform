@@ -1,6 +1,5 @@
 package com.example.security.admin.controller;
 
-import com.example.security.admin.dto.GrantAdminRequest;
 import com.example.security.admin.dto.RevokeAdminRequest;
 import com.example.security.admin.dto.TransferAdminRequest;
 import com.example.security.admin.service.AdminManagementService;

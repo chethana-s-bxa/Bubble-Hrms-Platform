@@ -7,6 +7,7 @@ import com.example.EmployeeManagement.DTO.EmployeeCreateRequestDTO;
 import com.example.EmployeeManagement.DTO.EmployeeSearchDTO;
 import com.example.EmployeeManagement.DTO.EmployeeSearchRequestDTO;
 import com.example.hrms_platform_document.service.storage.StorageService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -33,9 +34,7 @@ import com.example.time.repository.LeaveTypeRepository;
 import com.example.time.entity.LeaveBalance;
 import com.example.time.entity.LeaveType;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
+
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -47,6 +46,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @AllArgsConstructor
@@ -90,6 +92,7 @@ public class EmployeeService {
             new DefaultLeaveType("Paternity Leave", 8, false)
     );
 
+    @Cacheable(value = "employees")
     public List<EmployeeDTO> getAllEmployee(){
         employeeAccessService.checkHrOrAdmin();
         return employeeRepository.findAll()
@@ -98,6 +101,8 @@ public class EmployeeService {
                 .toList();
     }
 
+
+    @Cacheable(value = "employees", key = "#id")
     public EmployeeDTO getEmployeeById(Long id){
 
         employeeAccessService.checkOwnerOrHr(id);
@@ -113,6 +118,7 @@ public class EmployeeService {
                 .toList();
     }
 
+    @CacheEvict(value = "employees", allEntries = true)
     public EmployeeDTO addEmployee(Employee employee){
         Employee employeeSaved = addEmployeeInternal(employee);
         return mapToDto(employeeSaved);
@@ -125,6 +131,7 @@ public class EmployeeService {
         return employeeSaved;
     }
 
+    @CacheEvict(value = "employees", allEntries = true)
     public EmployeeDTO updateEmployee(Long id, Employee updated){
         Employee existing = employeeRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
@@ -306,6 +313,7 @@ public class EmployeeService {
         }
     }
 
+    @Cacheable(value = "employees", key = "#managerId")
     public List<EmployeeDTO> getEmployeesUnderManager(Long managerId) {
 
         // HR can view anyone, EMPLOYEE only their own subordinates
@@ -375,7 +383,9 @@ public class EmployeeService {
         return deptA.trim().equalsIgnoreCase(deptB.trim());
     }
 
+
 //    Employee Search based on name, department, id, location, band
+    @Cacheable(value = "employees", key = "#request.toString()")
     public List<EmployeeSearchDTO> searchEmployees(EmployeeSearchRequestDTO request) {
 
 

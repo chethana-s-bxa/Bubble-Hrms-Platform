@@ -26,6 +26,7 @@ export const API_ENDPOINTS = {
   // Admin endpoints
   ADMIN: {
     CREATE_HR: '/admin/hr',
+    CREATE_ADMIN: '/admin/hr/admin',
     GET_ALL_HR: '/admin/hr/all',
     GET_HR_BY_ID: '/admin/hr',
     UPDATE_HR: '/admin/hr/update',

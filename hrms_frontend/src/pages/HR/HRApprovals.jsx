@@ -3,9 +3,11 @@ import Layout from '../../components/Layout/Layout';
 import axiosInstance from '../../utils/axiosConfig';
 import { API_ENDPOINTS } from '../../config/api';
 import { useToast } from '../../context/ToastContext';
+import { useAppState } from '../../context/AppStateContext';
 
 const HRApprovals = () => {
   const { showToast } = useToast();
+  const { refreshNotifications, refreshPendingCounts } = useAppState();
   const [documents, setDocuments] = useState([]);
   const [leaves, setLeaves] = useState([]);
   const [loadingDocs, setLoadingDocs] = useState(true);
@@ -55,8 +57,13 @@ const HRApprovals = () => {
       await axiosInstance.put(`${API_ENDPOINTS.DOCUMENTS.GET}/${documentId}/approve`);
       setMessage('Document approved.');
       loadDocuments();
+      // Refresh dashboard counts immediately after approval
+      refreshNotifications();
+      refreshPendingCounts();
+      showToast({ type: 'success', title: 'Document approved', message: 'Document has been approved successfully.' });
     } catch (error) {
       setMessage(error.response?.data?.message || 'Document approval failed.');
+      showToast({ type: 'error', title: 'Approval failed', message: error.response?.data?.message || 'Document approval failed.' });
     }
   };
 
@@ -96,8 +103,13 @@ const HRApprovals = () => {
       setRejectReason('');
       setShowRejectModal(false);
       loadDocuments();
+      // Refresh dashboard counts immediately after rejection
+      refreshNotifications();
+      refreshPendingCounts();
+      showToast({ type: 'success', title: 'Document rejected', message: 'Document has been rejected successfully.' });
     } catch (error) {
       setMessage(error.response?.data?.message || 'Document rejection failed.');
+      showToast({ type: 'error', title: 'Rejection failed', message: error.response?.data?.message || 'Document rejection failed.' });
     } finally {
       setRejectSubmitting(false);
     }
@@ -126,8 +138,13 @@ const HRApprovals = () => {
       await axiosInstance.put(`${API_ENDPOINTS.TIME.LEAVE_APPROVE}/${leaveRequestId}/approve`);
       setMessage('Leave approved.');
       loadLeaves();
+      // Refresh dashboard counts immediately after approval
+      refreshNotifications();
+      refreshPendingCounts();
+      showToast({ type: 'success', title: 'Leave approved', message: 'Leave request has been approved successfully.' });
     } catch (error) {
       setMessage(error.response?.data?.message || 'Leave approval failed.');
+      showToast({ type: 'error', title: 'Approval failed', message: error.response?.data?.message || 'Leave approval failed.' });
     }
   };
 
@@ -141,8 +158,13 @@ const HRApprovals = () => {
       await axiosInstance.put(`${API_ENDPOINTS.TIME.LEAVE_REJECT}/${leaveRequestId}/reject`);
       setMessage('Leave rejected.');
       loadLeaves();
+      // Refresh dashboard counts immediately after rejection
+      refreshNotifications();
+      refreshPendingCounts();
+      showToast({ type: 'success', title: 'Leave rejected', message: 'Leave request has been rejected successfully.' });
     } catch (error) {
       setMessage(error.response?.data?.message || 'Leave rejection failed.');
+      showToast({ type: 'error', title: 'Rejection failed', message: error.response?.data?.message || 'Leave rejection failed.' });
     }
   };
 

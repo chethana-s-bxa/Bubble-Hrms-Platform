@@ -125,6 +125,85 @@ public class AdminHrService {
         );
     }
 
+    @Transactional
+    public EmployeeCreateResponse createAdmin(CreateHrRequestDTO request) {
+
+        // Generate company email
+        String companyEmail = companyEmailGenerator.generate(
+                request.getFirstName(),
+                request.getLastName()
+        );
+
+        // Generate password
+        String tempPassword = passwordGenerator.generateTempPassword();
+
+        // Fetch roles
+        Role adminRole = roleRepository.findByName(RoleConstants.ROLE_ADMIN)
+                .orElseThrow(() -> new RuntimeException("ROLE_ADMIN not found"));
+
+        Role employeeRole = roleRepository.findByName(RoleConstants.ROLE_EMPLOYEE)
+                .orElseThrow(() -> new RuntimeException("ROLE_EMPLOYEE not found"));
+
+        Set<Role> roles = new HashSet<>();
+        roles.add(employeeRole);
+        roles.add(adminRole);
+
+        // Create User
+        User user = User.builder()
+                .username(companyEmail)
+                .password(passwordEncoder.encode(tempPassword))
+                .enabled(true)
+                .roles(roles)
+                .mustChangePassword(true)
+                .build();
+
+        User savedUser = userRepository.save(user);
+
+        // Create Employee record
+        Employee employee = new Employee();
+        employee.setFirstName(request.getFirstName());
+        employee.setLastName(request.getLastName());
+        employee.setCompanyEmail(companyEmail);
+        employee.setDepartment(request.getDepartment());
+        employee.setDesignation(request.getDesignation());
+        employee.setStatus("ACTIVE");
+        employee.setEmployeeType("FULL_TIME");
+        employee.setCurrentBand(request.getCurrentBand());
+        employee.setCurrentExperience(
+                request.getCurrentExperience() != null ? request.getCurrentExperience() : 0
+        );
+        employee.setCtc(
+                request.getCtc() != null ? request.getCtc() : 0
+        );
+        employee.setPhoneNumber(request.getPhoneNumber());
+        employee.setDateOfJoining(
+                request.getDateOfJoining() != null ? request.getDateOfJoining() : LocalDate.now()
+        );
+        employee.setCreatedByHrUserId(savedUser.getId());
+        employee.setUser(savedUser);
+
+        Employee savedEmployee = employeeRepository.save(employee);
+
+        // Link user to employee
+        savedUser.setEmployeeId(savedEmployee.getEmployeeId());
+        userRepository.save(savedUser);
+
+        // Send email
+        if (request.getPersonalEmail() != null && !request.getPersonalEmail().isBlank()) {
+            emailService.sendEmployeeOnboardingEmail(
+                    request.getPersonalEmail(),
+                    companyEmail,
+                    tempPassword
+            );
+        }
+
+        return new EmployeeCreateResponse(
+                savedEmployee.getEmployeeId(),
+                companyEmail,
+                tempPassword
+        );
+    }
+
     public List<HrListResponse> getAllHrUsers() {
         return userRepository.findAllWithHrRole().stream()
                 .map(u -> new HrListResponse(

@@ -1,5 +1,6 @@
 package com.example.security.jwt;
 
+import com.example.security.model.Role;
 import com.example.security.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -66,7 +67,7 @@ public class JwtService {
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("employeeId", user.getEmployeeId());
-        claims.put("roles", user.getRoles());
+        claims.put("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + jwtExpirationMs);

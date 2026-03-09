@@ -14,6 +14,7 @@ import OAuthError from "./Authentication/Components/OAuthError";
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import CreateHR from "./pages/Admin/CreateHR";
+import CreateAdmin from "./pages/Admin/CreateAdmin";
 import ManageHR from "./pages/Admin/ManageHR";
 import EditHR from "./pages/Admin/EditHR";
 
@@ -34,6 +35,7 @@ function App() {
   const protectedRoutes = [
     // Admin
     { path: "/admin/dashboard", element: <AdminDashboard />, roles: ["ADMIN"] },
+    { path: "/admin/create-admin", element: <CreateAdmin />, roles: ["ADMIN"] },
     { path: "/admin/create-hr", element: <CreateHR />, roles: ["ADMIN"] },
     { path: "/admin/manage-hr", element: <ManageHR />, roles: ["ADMIN"] },
     { path: "/admin/manage-hr/:id/edit", element: <EditHR />, roles: ["ADMIN"] },

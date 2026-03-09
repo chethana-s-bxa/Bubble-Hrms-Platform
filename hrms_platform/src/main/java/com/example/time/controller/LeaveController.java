@@ -9,8 +9,8 @@ import com.example.time.entity.LeaveRequest;
 import com.example.time.entity.LeaveType;
 import com.example.time.mapper.LeaveRequestMapper;
 import com.example.time.repository.LeaveBalanceRepository;
-import com.example.time.repository.LeaveTypeRepository;
 import com.example.time.services.LeaveService;
+import com.example.time.services.LeaveTypeService;
 import com.example.security.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,7 +28,7 @@ public class LeaveController {
     private final LeaveService leaveService;
     private final SecurityUtil securityUtil;
     private final LeaveBalanceRepository leaveBalanceRepository;
-    private final LeaveTypeRepository leaveTypeRepository;
+    private final LeaveTypeService leaveTypeService;
 
     /**
      * APPLY LEAVE
@@ -59,7 +59,7 @@ public class LeaveController {
                 .filter(balance -> balance.getLeaveTypeId() != null)
                 .collect(Collectors.toMap(LeaveBalance::getLeaveTypeId, balance -> balance, (a, b) -> a));
 
-        List<LeaveType> leaveTypes = leaveTypeRepository.findAll();
+        List<LeaveType> leaveTypes = leaveTypeService.getAllLeaveTypes();
         if (leaveTypes.isEmpty()) {
             return balances.stream()
                     .map(balance -> mapToLeaveBalanceDto(null, balance))
